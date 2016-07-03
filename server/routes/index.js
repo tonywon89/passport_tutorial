@@ -1,6 +1,10 @@
 var express = require('express');
 var router = express.Router();
 var passport = require('passport');
+var bcrypt = require('bcrypt');
+var User = require("../models/user.js");
+
+var saltRounds = 10;
 
 router.get('/logout', function(req, res){
   console.log('logging out');
@@ -25,14 +29,20 @@ router.post('/login',
     res.redirect('/');
   });
 
-router.get('/auth/github', passport.authenticate('github'));
+router.get('/register', function (req, res) {
+  res.render('register');
+});
 
-// GitHub will call this URL
-router.get('/auth/github/callback', passport.authenticate('github', { failureRedirect: '/' }),
-  function(req, res) {
-    res.redirect('/');
-  }
-);
+router.post('/register', function (req, res) {
+  bcrypt.hash(req.body.password, saltRounds, function(err, hash) {
+    User.registerUser(req.body.username, hash, function() {
+      res.redirect("/login");
+    });
+  });
+
+
+
+});
 
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {

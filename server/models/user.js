@@ -28,3 +28,15 @@ module.exports.findById = function(id, callback) {
       return callback(err, null);
     });
 };
+
+module.exports.registerUser = function (username, passwordDigest, callback) {
+  db.oneOrNone('insert into users (username, password) values (${username}, ${password})', {username: username, password: passwordDigest} )
+    .then(function() {
+      console.log("Success????");
+      callback();
+    })
+    .catch(function (err) {
+      console.log(err);
+      return callback(err);
+    });
+};
