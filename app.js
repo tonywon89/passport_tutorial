@@ -11,6 +11,7 @@ var users = require('./server/routes/users');
 var app = express();
 
 var passport = require("passport");
+var GithubStrategy = require('passport-github').Strategy;
 // view engine setup
 app.set('views', path.join(__dirname, './client', 'views'));
 app.set('view engine', 'jade');
@@ -23,7 +24,15 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, './client', 'public')));
 
-
+passport.use(new GithubStrategy({
+    clientID: "1ba26fea18a2ac7c473f",
+    clientSecret: "c4a9cf38040ef6d102f3f59a85b8cc2854cc07c2",
+    callbackURL: "http://localhost:30000/auth/github/callback"
+  },
+  function(accessToken, refreshToken, profile, done) {
+    return done(null, profile);
+  }
+));
 
 var session = require('express-session');
 app.use(session({secret: "Hello"}));
