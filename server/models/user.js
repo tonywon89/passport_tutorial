@@ -10,6 +10,7 @@ var db = pgp(connectionString);
 
 module.exports.findOne = function (fields, callback) {
   var username = fields.username;
+  console.log(username);
   db.one('select * from users where username = $1', username)
     .then(function(data) {
       callback(null, data);
@@ -32,7 +33,6 @@ module.exports.findById = function(id, callback) {
 module.exports.registerUser = function (username, passwordDigest, callback) {
   db.oneOrNone('insert into users (username, password) values (${username}, ${password})', {username: username, password: passwordDigest} )
     .then(function() {
-      console.log("Success????");
       callback();
     })
     .catch(function (err) {

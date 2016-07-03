@@ -4,6 +4,7 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var bcrypt = require("bcrypt");
 
 var routes = require('./server/routes/index');
 var users = require('./server/routes/users');
@@ -34,9 +35,7 @@ passport.use(new LocalStrategy(
       }
       if (!user) {
         return done(null, false); }
-      if (user.password !== password) {
-        // console.log(err);
-        // console.log(user);
+      if (!bcrypt.compareSync(password, user.password)) {
         return done(null, false);
       }
       // console.log(user);
