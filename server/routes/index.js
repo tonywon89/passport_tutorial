@@ -9,19 +9,21 @@ router.get('/logout', function(req, res){
 });
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
-  var html = "<ul>\
-    <li><a href='/auth/github'>GitHub</a></li>\
-    <li><a href='/logout'>logout</a></li>\
-  </ul>";
+router.get('/',
+  function(req, res) {
+    res.render('home', { user: req.user });
+  });
 
-  if (req.isAuthenticated()) {
-    html += "<p>authenticated as user:</p>";
-    html += "<pre>" + JSON.stringify(req.user, null, 4) + "</pre>";
-  }
-
-  res.send(html);
+router.get('/login', function(req, res) {
+  res.render('login');
 });
+
+router.post('/login',
+  passport.authenticate('local', { failureRedirect: '/login' }),
+  function(req, res) {
+    // console.log(req.user);
+    res.redirect('/');
+  });
 
 router.get('/auth/github', passport.authenticate('github'));
 

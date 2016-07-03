@@ -11,10 +11,10 @@ var users = require('./server/routes/users');
 var app = express();
 
 var passport = require("passport");
-var GithubStrategy = require('passport-github').Strategy;
+var LocalStrategy = require('passport-local').Strategy;
 // view engine setup
-app.set('views', path.join(__dirname, './client', 'views'));
-app.set('view engine', 'jade');
+app.set('views', path.join(__dirname, './client', '/views'));
+app.set('view engine', 'ejs');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
@@ -24,18 +24,33 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, './client', 'public')));
 
-passport.use(new GithubStrategy({
-    clientID: "1ba26fea18a2ac7c473f",
-    clientSecret: "c4a9cf38040ef6d102f3f59a85b8cc2854cc07c2",
-    callbackURL: "http://localhost:30000/auth/github/callback"
-  },
-  function(accessToken, refreshToken, profile, done) {
-    return done(null, profile);
+var User = require("./server/models/user.js");
+
+passport.use(new LocalStrategy(
+  function(username, password, done) {
+    User.findOne({ username: username }, function (err, user) {
+      if (err) {
+        return done(err);
+      }
+      if (!user) {
+        return done(null, false); }
+      if (user.password !== password) {
+        // console.log(err);
+        // console.log(user);
+        return done(null, false);
+      }
+      // console.log(user);
+      return done(null, user);
+    });
   }
 ));
 
 var session = require('express-session');
-app.use(session({secret: "Hello"}));
+app.use(session({
+  secret: "Learn Passport",
+  resave: true,
+  saveUnitialized: false
+}));
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -45,14 +60,17 @@ app.use('/users', users);
 passport.serializeUser(function(user, done) {
   // placeholder for custom user serialization
   // null is for errors
-  done(null, user);
+  done(null, user.id);
 });
 
-passport.deserializeUser(function(user, done) {
+passport.deserializeUser(function(id, done) {
   // placeholder for custom user deserialization.
   // maybe you are going to get the user from mongo by id?
   // null is for errors
-  done(null, user);
+  User.findById(id, function (err, user) {
+    if (err) { return done(err); }
+    done(null, user);
+  });
 });
 
 // catch 404 and forward to error handler
